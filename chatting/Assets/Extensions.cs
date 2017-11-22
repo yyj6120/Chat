@@ -11,6 +11,16 @@ using System.Linq;
 
 public static class Extensions
 {
+    public static void UIchat(this ChatState state, UIPanelInfo[] panel)
+    {
+        for(int i = 0; i < panel.Length; i++)
+        {
+            if(state == panel[i].state)
+                panel[i].UIpanel.SetActive(true);
+            else
+                panel[i].UIpanel.SetActive(false);
+        }
+    }
     // string to int (returns errVal if failed)
     public static int ToInt(this string value, int errVal = 0)
     {

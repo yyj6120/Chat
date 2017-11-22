@@ -3,20 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Net;
 using UnityEngine.UI;
-
+using System;
+[Serializable]
+public struct UIPanelInfo
+{
+    public ChatState state;
+    public GameObject UIpanel;
+}
 public class Chat : MonoBehaviour
 {
-    TransportTCP transport;
+    public UIChat chattingwindow;
+    public TransportTCP transport;
     private ChatState state = ChatState.HOST_TYPE_SELECT;
     private const int port = 50765;
 
-    private string chatMessage = "";
-    private List<string>[] message;
-
     private bool isServer = false;
-    private static int CHAT_MEMBER_NUM = 2;
-    private static int MESSAGE_LINE = 18;
 
+    public UIPanelInfo[] chatStatePanel;
+    //public GameObject[] chatStatePanel;
     public InputField hostAddress;
     // Use this for initialization
     void Start()
@@ -28,21 +32,22 @@ public class Chat : MonoBehaviour
         IPHostEntry hostEntry = Dns.GetHostEntry(Dns.GetHostName());
         System.Net.IPAddress hostAddress = hostEntry.AddressList[0];
 
-        message = new List<string>[CHAT_MEMBER_NUM];
-        for (int i = 0; i < CHAT_MEMBER_NUM; ++i)
+        StartCoroutine(UIroutine());
+    }
+    IEnumerator UIroutine()
+    {
+        while(true)
         {
-            message[i] = new List<string>();
+            state.UIchat(chatStatePanel);
+            yield return new WaitForSeconds(0.02f);
         }
     }
-
     // Update is called once per frame
     void Update()
     {
         switch (state)
         {
             case ChatState.HOST_TYPE_SELECT:
-                for (int i = 0; i < CHAT_MEMBER_NUM; ++i)
-                    message[i].Clear();
                 break;
             case ChatState.CHATTING:
                 UpdateChatting();
@@ -62,31 +67,15 @@ public class Chat : MonoBehaviour
         {
             string recvMessage = System.Text.Encoding.UTF8.GetString(buffer);
             Debug.Log("Recv data:" + recvMessage);
-            chatMessage += recvMessage + "   ";
-
-            int id = (isServer == true) ? 1 : 0;
-            AddMessage(ref message[id], recvMessage);
+            chattingwindow.AddMessage(recvMessage);
         }
     }
-
-    void AddMessage(ref List<string> messages, string str)
-    {
-        while (messages.Count >= MESSAGE_LINE)
-            messages.RemoveAt(0);
-
-        messages.Add(str);
-    }
-
     void UpdateLeave()
     {
         if (isServer == true)
             transport.StopServer();
         else
             transport.Disconnect();
-
-        // 메시지 삭제.
-        for (int i = 0; i < 2; ++i)
-            message[i].Clear();
 
         state = ChatState.HOST_TYPE_SELECT;
     }
@@ -113,16 +102,15 @@ public class Chat : MonoBehaviour
         {
             case NetEventType.Connect:
                 if (transport.IsServer())
-                    AddMessage(ref message[1], "콩장수가 입장했습니다.");
+                    Debug.Log("서버입장");
                 else
-                    AddMessage(ref message[0], "두부장수와 이야기할 수 있습니다.");
+                    Debug.Log("고객");
                 break;
-
             case NetEventType.Disconnect:
                 if (transport.IsServer())
-                    AddMessage(ref message[0], "콩장수가 나갔습니다.");
+                    Debug.Log("서버가 나갔습니다.");
                 else
-                    AddMessage(ref message[1], "콩장수가 나갔습니다.");
+                    Debug.Log("고객이 나갔습니다.");
                 break;
         }
     }

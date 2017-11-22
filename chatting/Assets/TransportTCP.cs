@@ -79,6 +79,7 @@ public class TransportTCP : MonoBehaviour
             return false;
         }
         isServer = true;
+
         return LaunchThread();
     }
 
@@ -108,9 +109,8 @@ public class TransportTCP : MonoBehaviour
     {
         Debug.Log("TransportTCP connect called.");
         if (listener != null)
-        {
             return false;
-        }
+
         bool ret = false;
         try
         {
@@ -177,7 +177,6 @@ public class TransportTCP : MonoBehaviour
 
         return sendQueue.Enqueue(data, size);
     }
-
     // 수신처리.
     public int Receive(ref byte[] buffer, int size)
     {
@@ -186,7 +185,6 @@ public class TransportTCP : MonoBehaviour
 
         return recvQueue.Dequeue(ref buffer, size);
     }
-
     // 이벤트 통지 함수 등록.
     public void RegisterEventHandler(EventHandler handler)
     {
@@ -198,7 +196,6 @@ public class TransportTCP : MonoBehaviour
     {
         this.handler -= handler;
     }
-
     // 스레드 시작 함수.
     bool LaunchThread()
     {
@@ -217,7 +214,6 @@ public class TransportTCP : MonoBehaviour
 
         return true;
     }
-
     // 스레드 측 송수신 처리.
     public void Dispatch()
     {
